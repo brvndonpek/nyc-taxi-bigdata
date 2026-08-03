@@ -49,6 +49,21 @@ def fig_borough():
     fig.tight_layout(); fig.savefig(f"{FIG}/fig3_revenue_by_borough.png"); plt.close()
 
 
+def fig_payment():
+    d = pd.read_csv(f"{OUT}/spark_by_payment.csv")
+    names = {1: "Credit card", 2: "Cash", 3: "No charge", 4: "Dispute"}
+    d = d[d.payment_type.isin(names)].copy()
+    d["label"] = d.payment_type.map(names) + "\n(" + (d.trips / 1e6).round(1).astype(str) + "M trips)"
+    fig, ax = plt.subplots(figsize=(8, 4.5))
+    colors = [BLUE if p == 1 else ORANGE for p in d.payment_type]
+    ax.bar(d.label, d.avg_tip_pct, color=colors)
+    ax.set_ylabel("Average tip %")
+    for i, v in enumerate(d.avg_tip_pct):
+        ax.text(i, v + 0.4, f"{v:.1f}%", ha="center", fontsize=10)
+    plt.title("Average Tip % by Payment Method — cash tips are not recorded")
+    fig.tight_layout(); fig.savefig(f"{FIG}/fig5_payment.png"); plt.close()
+
+
 def fig_benchmark():
     b = pd.read_csv(f"{OUT}/benchmark.csv")
     x = b.rows / 1e6
@@ -67,7 +82,7 @@ def fig_benchmark():
 
 
 if __name__ == "__main__":
-    fig_demand(); fig_zones(); fig_borough(); fig_benchmark()
+    fig_demand(); fig_zones(); fig_borough(); fig_payment(); fig_benchmark()
     print("Figures written to", FIG)
     for f in sorted(os.listdir(FIG)):
         print("  ", f)

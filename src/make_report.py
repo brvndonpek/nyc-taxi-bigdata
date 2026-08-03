@@ -195,6 +195,41 @@ def main():
         "out-of-core, parallel execution automatically — the extra manual effort "
         "on the Pandas side is itself part of the finding.")
 
+    h(doc, "3.1 A worked example", level=2)
+    doc.add_paragraph(
+        "To make the map-shuffle-reduce flow concrete, consider computing the "
+        "average tip % per hour from five sample trips. In the map phase each "
+        "trip is turned into a (key, value) pair keyed on the pickup hour, "
+        "carrying the tip % and a count of 1:")
+    ex_map = pd.DataFrame({
+        "Trip": ["A", "B", "C", "D", "E"],
+        "Pickup hour": [18, 9, 18, 9, 18],
+        "tip %": [20.0, 15.0, 30.0, 25.0, 22.0],
+        "Map output (key → value)": [
+            "18 → (20.0, 1)", "9 → (15.0, 1)", "18 → (30.0, 1)",
+            "9 → (25.0, 1)", "18 → (22.0, 1)"],
+    })
+    add_table(doc, ex_map)
+    doc.add_paragraph(
+        "The shuffle phase then groups all values that share a key onto the same "
+        "reducer — the trips for hour 18 land together, and likewise for hour 9. "
+        "Finally the reduce phase sums the tip percentages and the counts per "
+        "key and divides to get the average:")
+    ex_red = pd.DataFrame({
+        "Hour (key)": [9, 18],
+        "Values after shuffle": ["(15.0,1),(25.0,1)", "(20.0,1),(30.0,1),(22.0,1)"],
+        "Reduce: sum tip% / sum count": ["40.0 / 2", "72.0 / 3"],
+        "Avg tip %": [20.0, 24.0],
+    })
+    add_table(doc, ex_red)
+    doc.add_paragraph(
+        "This is exactly what runs at scale in our Spark job — only instead of "
+        "five rows on one machine, the 35.6M cleaned trips are split into "
+        "partitions, mapped in parallel across all cores, shuffled by key, and "
+        "reduced. Because each partition is mapped independently, the work scales "
+        "almost linearly with the number of cores or machines available — the "
+        "property that makes the approach a “big data” solution.")
+
     # -------- 4. Analysis of output --------
     h(doc, "4. Analysis of the Output")
 
@@ -240,7 +275,27 @@ def main():
         "taxis and for-hire vehicles. This concentration is a useful signal for "
         "fleet positioning.")
 
-    h(doc, "4.4 Engine comparison: PySpark vs Pandas", level=2)
+    h(doc, "4.4 Tipping by payment method — a data-quality insight", level=2)
+    pay = pd.read_csv(f"{OUT}/spark_by_payment.csv")
+    names = {1: "Credit card", 2: "Cash", 3: "No charge", 4: "Dispute"}
+    pay = pay[pay.payment_type.isin(names)].copy()
+    pay["Payment method"] = pay.payment_type.map(names)
+    add_table(doc, pay[["Payment method", "trips", "avg_tip_pct"]])
+    fig(doc, f"{FIG}/fig5_payment.png",
+        "Figure 5. Average tip % by payment method.")
+    doc.add_paragraph(
+        "This breakdown exposes an important characteristic of the data. "
+        "Credit-card trips (29.9M, the large majority) average a 25.1% tip, but "
+        "cash trips (5.2M) record an average tip of 0.0%. Cash passengers "
+        "obviously do tip — the explanation is that the TLC data set only "
+        "captures tips entered through the card reader; cash tips are never "
+        "recorded. This matters for interpretation: the ~21% blended tip average "
+        "reported earlier is diluted by cash trips showing as zero, so the true "
+        "card-tipping rate (25.1%) is the more meaningful figure. Recognising "
+        "this prevents a wrong conclusion and demonstrates why understanding how "
+        "data is collected is as important as the analysis itself.")
+
+    h(doc, "4.5 Engine comparison: PySpark vs Pandas", level=2)
     bench = pd.read_csv(f"{OUT}/benchmark.csv")
     show = bench.rename(columns={
         "months": "Months", "rows": "Rows",
