@@ -1,0 +1,4 @@
+Engine: PySpark (local[*])
+Raw trips: 41169720
+Clean trips: 35628429
+Total runtime: 40.1 s

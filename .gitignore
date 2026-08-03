@@ -1,0 +1,17 @@
+# Dataset is too large for GitHub — download from the link in the README instead
+data/*.parquet
+
+# keep the small zone lookup table in the repo
+!data/taxi_zone_lookup.csv
+
+# Python / Spark junk
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+spark-warehouse/
+metastore_db/
+derby.log
+.DS_Store
+
+# Claude Code local settings
+.claude/

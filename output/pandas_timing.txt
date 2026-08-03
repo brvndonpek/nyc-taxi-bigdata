@@ -1,0 +1,4 @@
+Engine: Pandas (single machine)
+Raw trips: 41169720
+Clean trips: 35628429
+Total runtime: 17.9 s
