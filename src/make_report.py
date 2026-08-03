@@ -83,7 +83,7 @@ def main():
         "Member 1:  ____________________  (Student ID: __________)",
         "Member 2:  ____________________  (Student ID: __________)",
         "",
-        "Source code & dataset: https://github.com/<your-username>/nyc-taxi-bigdata",
+        "Source code & dataset: https://github.com/brvndonpek/nyc-taxi-bigdata",
     ]:
         p = doc.add_paragraph()
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -326,21 +326,55 @@ def main():
 
     # -------- 5. Reflection --------
     h(doc, "5. Individual Reflection")
+    note = doc.add_paragraph()
+    r = note.add_run(
+        "NOTE TO AUTHORS: the two reflections below are drafts grounded in the "
+        "real work done in this project. Personalise them in your own words and "
+        "adjust any detail (e.g. which part you personally handled) before "
+        "submitting — reflections should be individual. Delete this note.")
+    r.italic = True
+
+    h(doc, "Member 1 — <name>", level=2)
     doc.add_paragraph(
-        "(Each team member writes their own reflection — around 200–300 words — "
-        "relating what they personally learned to the results above. Replace the "
-        "placeholders below. The marking scheme rewards reflections that connect "
-        "to the actual results obtained, not general statements.)")
-    for name in ["Member 1 — <name>", "Member 2 — <name>"]:
-        h(doc, name, level=2)
-        doc.add_paragraph(
-            "Prompt ideas: What did you learn about the MapReduce/Spark model? "
-            "What surprised you in the results (e.g. that Pandas beat Spark on "
-            "small data, or the airport tipping pattern)? What was difficult "
-            "(Java/Spark setup, memory limits, data cleaning)? How would this "
-            "change for a truly cluster-scale dataset? What would you do "
-            "differently next time?")
-        doc.add_paragraph("[ Your reflection here. ]")
+        "The biggest thing I took away from this assignment is that “big data” is "
+        "about scalability, not raw speed. Before starting, I assumed Spark would "
+        "always beat Pandas. Our benchmark proved the opposite for small data: on "
+        "a single month Pandas finished in 0.2 s while Spark took 3.4 s because of "
+        "its fixed start-up cost (the JVM, query planner and shuffle setup). Only "
+        "as the data grew to the full 35.6M rows did Spark pull clearly ahead "
+        "(1.0 s vs 3.0 s). What really made the point was memory: Pandas' peak "
+        "usage rose linearly to almost 4 GB, and we could see that at roughly five "
+        "times the data it would exceed our 16 GB laptop and simply crash, whereas "
+        "Spark's runtime stayed flat. That is the moment the value of a "
+        "distributed engine clicked for me — it is what lets you process data that "
+        "does not fit in memory, and scale the same code out to a cluster. "
+        "Understanding the map-shuffle-reduce model also helped me see why our "
+        "groupBy queries parallelise so well: each partition is mapped "
+        "independently before the shuffle. If I did this again I would run it on a "
+        "real cloud cluster (e.g. AWS EMR or Databricks) with a much larger "
+        "dataset, because that is where Spark's advantage would be dramatic rather "
+        "than marginal. (Approx. 230 words — edit to your own experience.)")
+
+    h(doc, "Member 2 — <name>", level=2)
+    doc.add_paragraph(
+        "My main lesson was that understanding the data matters as much as the "
+        "processing technology. When we first computed the average tip we got "
+        "about 21%, but breaking it down by payment method revealed that cash "
+        "trips recorded a 0% tip. Cash riders clearly do tip — the TLC data only "
+        "captures tips entered on the card reader — so the honest figure is the "
+        "25.1% card-tipping rate. Catching that stopped us from reporting a "
+        "misleading number, and it taught me to always ask how a dataset was "
+        "collected. I also learned a lot from the practical setup: Spark needs a "
+        "Java runtime, and getting the environment right (installing Java 17 and "
+        "pointing Spark at it) was a real hurdle before any analysis could run. "
+        "Data cleaning was another eye-opener — 13.5% of the raw rows were invalid "
+        "(zero fares, zero-distance or impossible trips), and applying the exact "
+        "same filters in both the Spark and Pandas versions was essential to make "
+        "the comparison fair. Seeing both engines produce identical numbers gave "
+        "me confidence the logic was correct. Next time I would add trip-duration "
+        "and speed analysis and visualise pickups on a map of the NYC zones, since "
+        "the location data is rich and we only used part of it. "
+        "(Approx. 230 words — edit to your own experience.)")
 
     # -------- Appendix --------
     h(doc, "Appendix — Reproducing the Results")
