@@ -98,5 +98,5 @@ flat — the core big-data advantage.
 
 ## Authors
 
-- *Member 1 — name / student ID*
-- *Member 2 — name / student ID*
+- *Member 1 — Brandon Pek Sun Yun / 22024525*
+- *Member 2 — Bryan Chin Lien Zheng / 22032122*
